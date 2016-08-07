@@ -28,22 +28,16 @@ subscriptions model =
 -- MODEL
 
 
-type alias Date =
-    { day : Int
-    , month : Int
-    , year : Int
-    }
-
-
 type alias Model =
     { xp : Int
-    , startingDay : Date
+    , startingDay : Date.Date
+    , today : Date.Date
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model 0 (Date 1 1 1970), Cmd.none )
+    ( Model 0 (Date.fromTime 0) (Date.fromTime 0), Cmd.none )
 
 
 
@@ -62,6 +56,9 @@ update msg model =
     let
         start =
             model.startingDay
+
+        newDate =
+            updateDate start msg
     in
         case msg of
             UpdateXP newXP ->
@@ -75,6 +72,32 @@ update msg model =
 
             UpdateYear newYear ->
                 ( { model | startingDay = { start | year = parseInput newYear } }, Cmd.none )
+
+
+updateDate : Date.Date -> Msg -> Date.Date
+updateDate start msg =
+    let
+        day =
+            Date.day start |> toString
+
+        month =
+            Date.month start |> toString
+
+        year =
+            Date.year start |> toString
+    in
+        case msg of
+            UpdateDay newDay ->
+                updateDay day month year newDay
+
+            UpdateMonth newMonth ->
+                updateMonth day month year newMonth
+
+            UpdateYear newYear ->
+                updateYear day month year newYear
+
+
+updateDay : String -> String -> String -> String -> Date.Date
 
 
 parseInput : String -> Int
@@ -114,9 +137,4 @@ results model =
         start =
             model.startingDay
     in
-        div []
-            [ div [] [ model.xp |> toString |> text ]
-            , div [] [ start.day |> toString |> text ]
-            , div [] [ start.month |> toString |> text ]
-            , div [] [ start.year |> toString |> text ]
-            ]
+        div [] []
