@@ -64,14 +64,8 @@ update msg model =
             UpdateXP newXP ->
                 ( { model | xp = parseInput newXP }, Cmd.none )
 
-            UpdateDay newDay ->
-                ( { model | startingDay = { start | day = parseInput newDay } }, Cmd.none )
-
-            UpdateMonth newMonth ->
-                ( { model | startingDay = { start | month = parseInput newMonth } }, Cmd.none )
-
-            UpdateYear newYear ->
-                ( { model | startingDay = { start | year = parseInput newYear } }, Cmd.none )
+            _ ->
+                ( { model | startingDay = updateDate start msg }, Cmd.none )
 
 
 updateDate : Date.Date -> Msg -> Date.Date
@@ -88,16 +82,17 @@ updateDate start msg =
     in
         case msg of
             UpdateDay newDay ->
-                updateDay day month year newDay
+                month ++ "." ++ newDay ++ "." ++ year |> Date.fromString |> withDefault start
 
             UpdateMonth newMonth ->
-                updateMonth day month year newMonth
+                newMonth ++ "." ++ day ++ "." ++ year |> Date.fromString |> withDefault start
 
             UpdateYear newYear ->
-                updateYear day month year newYear
+                month ++ "." ++ day ++ "." ++ newYear |> Date.fromString |> withDefault start
 
-
-updateDay : String -> String -> String -> String -> Date.Date
+            -- interesting... You can create a problem for yourself if you "split" a case/of statement by passing the operator in the default branch... might want to look into this
+            _ ->
+                start
 
 
 parseInput : String -> Int
