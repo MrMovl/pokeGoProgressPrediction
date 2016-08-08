@@ -8375,8 +8375,65 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
-var _user$project$Main$results = function (model) {
-	var start = model.startingDay;
+var _user$project$Levels$levels = _elm_lang$core$Native_List.fromArray(
+	[
+		{level: 1, threshold: 0},
+		{level: 2, threshold: 1000},
+		{level: 3, threshold: 3000},
+		{level: 4, threshold: 6000},
+		{level: 5, threshold: 10000},
+		{level: 6, threshold: 15000},
+		{level: 7, threshold: 21000},
+		{level: 8, threshold: 28000},
+		{level: 9, threshold: 36000},
+		{level: 10, threshold: 45000},
+		{level: 11, threshold: 55000},
+		{level: 12, threshold: 65000},
+		{level: 13, threshold: 75000},
+		{level: 14, threshold: 85000},
+		{level: 15, threshold: 100000},
+		{level: 16, threshold: 120000},
+		{level: 17, threshold: 140000},
+		{level: 18, threshold: 160000},
+		{level: 19, threshold: 185000},
+		{level: 20, threshold: 210000},
+		{level: 21, threshold: 260000},
+		{level: 22, threshold: 335000},
+		{level: 23, threshold: 435000},
+		{level: 24, threshold: 560000},
+		{level: 25, threshold: 710000},
+		{level: 26, threshold: 900000},
+		{level: 27, threshold: 1100000},
+		{level: 28, threshold: 1350000},
+		{level: 29, threshold: 1650000},
+		{level: 30, threshold: 2000000},
+		{level: 31, threshold: 2500000},
+		{level: 32, threshold: 3000000},
+		{level: 33, threshold: 3750000},
+		{level: 34, threshold: 4750000},
+		{level: 35, threshold: 6000000},
+		{level: 36, threshold: 7500000},
+		{level: 37, threshold: 9500000},
+		{level: 38, threshold: 12000000},
+		{level: 39, threshold: 15000000},
+		{level: 40, threshold: 20000000}
+	]);
+var _user$project$Levels$Level = F2(
+	function (a, b) {
+		return {level: a, threshold: b};
+	});
+
+var _user$project$Main$results = function (_p0) {
+	var _p1 = _p0;
+	var diff = _elm_lang$core$Date$toTime(_p1.today) - _elm_lang$core$Date$toTime(_p1.startingDay);
+	var xpRatio = _elm_lang$core$Basics$round(
+		A2(
+			F2(
+				function (x, y) {
+					return x / y;
+				}),
+			diff,
+			_elm_lang$core$Basics$toFloat(_p1.xp)));
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8384,8 +8441,20 @@ var _user$project$Main$results = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_elm_lang$html$Html$text(
-				_elm_lang$core$Basics$toString(
-					_elm_lang$core$Date$toTime(model.today)))
+				A2(
+					F2(
+						function (x, y) {
+							return A2(_elm_lang$core$Basics_ops['++'], x, y);
+						}),
+					' miliseconds per xp: ',
+					_elm_lang$core$Basics$toString(xpRatio))),
+				A2(
+				_elm_lang$html$Html$br,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				_elm_lang$html$Html$text('Add levels here')
 			]));
 };
 var _user$project$Main$parseInput = function (input) {
@@ -8402,8 +8471,8 @@ var _user$project$Main$updateDate = F2(
 			_elm_lang$core$Date$month(start));
 		var day = _elm_lang$core$Basics$toString(
 			_elm_lang$core$Date$day(start));
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
 			case 'UpdateDay':
 				return A2(
 					_elm_lang$core$Result$withDefault,
@@ -8417,7 +8486,7 @@ var _user$project$Main$updateDate = F2(
 								'.',
 								A2(
 									_elm_lang$core$Basics_ops['++'],
-									_p0._0,
+									_p2._0,
 									A2(_elm_lang$core$Basics_ops['++'], '.', year))))));
 			case 'UpdateMonth':
 				return A2(
@@ -8426,7 +8495,7 @@ var _user$project$Main$updateDate = F2(
 					_elm_lang$core$Date$fromString(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_p0._0,
+							_p2._0,
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								'.',
@@ -8448,7 +8517,7 @@ var _user$project$Main$updateDate = F2(
 								A2(
 									_elm_lang$core$Basics_ops['++'],
 									day,
-									A2(_elm_lang$core$Basics_ops['++'], '.', _p0._0))))));
+									A2(_elm_lang$core$Basics_ops['++'], '.', _p2._0))))));
 			default:
 				return start;
 		}
@@ -8457,8 +8526,8 @@ var _user$project$Main$update = F2(
 	function (msg, model) {
 		var start = model.startingDay;
 		var newDate = A2(_user$project$Main$updateDate, start, msg);
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'UpdateTime':
 				return {
 					ctor: '_Tuple2',
@@ -8466,7 +8535,7 @@ var _user$project$Main$update = F2(
 						model,
 						{
 							today: _elm_lang$core$Date$fromTime(
-								_elm_lang$core$Basics$toFloat(_p1._0))
+								_elm_lang$core$Basics$toFloat(_p3._0))
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -8476,7 +8545,7 @@ var _user$project$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							xp: _user$project$Main$parseInput(_p1._0)
+							xp: _user$project$Main$parseInput(_p3._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -8622,6 +8691,8 @@ var _user$project$Main$main = {
 };
 
 var Elm = {};
+Elm['Levels'] = Elm['Levels'] || {};
+_elm_lang$core$Native_Platform.addPublicModule(Elm['Levels'], 'Levels', typeof _user$project$Levels$main === 'undefined' ? null : _user$project$Levels$main);
 Elm['Main'] = Elm['Main'] || {};
 _elm_lang$core$Native_Platform.addPublicModule(Elm['Main'], 'Main', typeof _user$project$Main$main === 'undefined' ? null : _user$project$Main$main);
 

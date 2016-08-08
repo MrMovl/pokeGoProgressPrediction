@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 import Date as Date
 import String exposing (toInt)
 import Result exposing (withDefault)
+import Levels exposing (..)
 
 
 main : Program Int
@@ -136,9 +137,16 @@ inputBoxes model =
 
 
 results : Model -> Html Msg
-results model =
+results { xp, today, startingDay } =
     let
-        start =
-            model.startingDay
+        diff =
+            (Date.toTime today) - (Date.toTime startingDay)
+
+        xpRatio =
+            round <| (/) diff <| toFloat xp
     in
-        div [] [ model.today |> Date.toTime |> toString |> text ]
+        div []
+            [ xpRatio |> toString |> (++) " miliseconds per xp: " |> text
+            , br [] []
+            , text "Add levels here"
+            ]
