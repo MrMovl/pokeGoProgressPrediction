@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html exposing (..)
 import Html.App as Html
@@ -9,14 +9,19 @@ import String exposing (toInt)
 import Result exposing (withDefault)
 
 
-main : Program Never
+main : Program Int
 main =
-    Html.program
-        { init = init
+    Html.programWithFlags
+        { init = initialize
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+initialize : Int -> ( Model, Cmd a )
+initialize currentTime =
+    ( Model 0 (Date.fromTime 0) (Date.fromTime (toFloat currentTime)), Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -49,6 +54,7 @@ type Msg
     | UpdateDay String
     | UpdateMonth String
     | UpdateYear String
+    | UpdateTime Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,6 +67,9 @@ update msg model =
             updateDate start msg
     in
         case msg of
+            UpdateTime currentTime ->
+                ( { model | today = Date.fromTime (toFloat currentTime) }, Cmd.none )
+
             UpdateXP newXP ->
                 ( { model | xp = parseInput newXP }, Cmd.none )
 
@@ -132,4 +141,4 @@ results model =
         start =
             model.startingDay
     in
-        div [] []
+        div [] [ model.today |> Date.toTime |> toString |> text ]

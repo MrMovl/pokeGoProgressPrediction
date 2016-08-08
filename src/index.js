@@ -8383,42 +8383,9 @@ var _user$project$Main$results = function (model) {
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(model.xp))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(start.day))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(start.month))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(start.year))
-					]))
+				_elm_lang$html$Html$text(
+				_elm_lang$core$Basics$toString(
+					_elm_lang$core$Date$toTime(model.today)))
 			]));
 };
 var _user$project$Main$parseInput = function (input) {
@@ -8427,46 +8394,89 @@ var _user$project$Main$parseInput = function (input) {
 		0,
 		_elm_lang$core$String$toInt(input));
 };
+var _user$project$Main$updateDate = F2(
+	function (start, msg) {
+		var year = _elm_lang$core$Basics$toString(
+			_elm_lang$core$Date$year(start));
+		var month = _elm_lang$core$Basics$toString(
+			_elm_lang$core$Date$month(start));
+		var day = _elm_lang$core$Basics$toString(
+			_elm_lang$core$Date$day(start));
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'UpdateDay':
+				return A2(
+					_elm_lang$core$Result$withDefault,
+					start,
+					_elm_lang$core$Date$fromString(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							month,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'.',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_p0._0,
+									A2(_elm_lang$core$Basics_ops['++'], '.', year))))));
+			case 'UpdateMonth':
+				return A2(
+					_elm_lang$core$Result$withDefault,
+					start,
+					_elm_lang$core$Date$fromString(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_p0._0,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'.',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									day,
+									A2(_elm_lang$core$Basics_ops['++'], '.', year))))));
+			case 'UpdateYear':
+				return A2(
+					_elm_lang$core$Result$withDefault,
+					start,
+					_elm_lang$core$Date$fromString(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							month,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'.',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									day,
+									A2(_elm_lang$core$Basics_ops['++'], '.', _p0._0))))));
+			default:
+				return start;
+		}
+	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var start = model.startingDay;
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var newDate = A2(_user$project$Main$updateDate, start, msg);
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'UpdateTime':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							today: _elm_lang$core$Date$fromTime(
+								_elm_lang$core$Basics$toFloat(_p1._0))
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'UpdateXP':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							xp: _user$project$Main$parseInput(_p0._0)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'UpdateDay':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							startingDay: _elm_lang$core$Native_Utils.update(
-								start,
-								{
-									day: _user$project$Main$parseInput(_p0._0)
-								})
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'UpdateMonth':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							startingDay: _elm_lang$core$Native_Utils.update(
-								start,
-								{
-									month: _user$project$Main$parseInput(_p0._0)
-								})
+							xp: _user$project$Main$parseInput(_p1._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -8476,11 +8486,7 @@ var _user$project$Main$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							startingDay: _elm_lang$core$Native_Utils.update(
-								start,
-								{
-									year: _user$project$Main$parseInput(_p0._0)
-								})
+							startingDay: A2(_user$project$Main$updateDate, start, msg)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -8489,21 +8495,33 @@ var _user$project$Main$update = F2(
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Main$Date = F3(
+var _user$project$Main$Model = F3(
 	function (a, b, c) {
-		return {day: a, month: b, year: c};
+		return {xp: a, startingDay: b, today: c};
 	});
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {xp: a, startingDay: b};
-	});
+var _user$project$Main$initialize = function (currentTime) {
+	return {
+		ctor: '_Tuple2',
+		_0: A3(
+			_user$project$Main$Model,
+			0,
+			_elm_lang$core$Date$fromTime(0),
+			_elm_lang$core$Date$fromTime(
+				_elm_lang$core$Basics$toFloat(currentTime))),
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
+};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A2(
+	_0: A3(
 		_user$project$Main$Model,
 		0,
-		A3(_user$project$Main$Date, 1, 1, 1970)),
+		_elm_lang$core$Date$fromTime(0),
+		_elm_lang$core$Date$fromTime(0)),
 	_1: _elm_lang$core$Platform_Cmd$none
+};
+var _user$project$Main$UpdateTime = function (a) {
+	return {ctor: 'UpdateTime', _0: a};
 };
 var _user$project$Main$UpdateYear = function (a) {
 	return {ctor: 'UpdateYear', _0: a};
@@ -8598,8 +8616,9 @@ var _user$project$Main$view = function (model) {
 			]));
 };
 var _user$project$Main$main = {
-	main: _elm_lang$html$Html_App$program(
-		{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{init: _user$project$Main$initialize, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions}),
+	flags: _elm_lang$core$Json_Decode$int
 };
 
 var Elm = {};
