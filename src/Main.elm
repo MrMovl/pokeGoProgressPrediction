@@ -187,24 +187,24 @@ results { xp, today, startingDay } =
         diff =
             (Date.toTime today) - (Date.toTime startingDay)
 
-        xpRatio =
-            xp / diff
+        xpPerDay =
+            xp / (diff * 86400000)
     in
-        div [] [ ul [] (createLevelRows xpRatio (Date.toTime today)) ]
+        div [] [ ul [] (createLevelRows xpPerDay (Date.toTime today)) ]
 
 
 createLevelRows : Float -> Float -> List (Html Msg)
-createLevelRows xpRatio today =
+createLevelRows xpPerDay today =
     let
         thresholds =
             List.map .threshold levels
 
         dates =
-            List.map (\threshold -> today + threshold * xpRatio |> Date.fromTime) thresholds
+            List.map (\threshold -> today + threshold * xpPerDay |> Date.fromTime) thresholds
     in
         List.map (\date -> li [] [ prettyDate date |> text ]) dates
 
 
 prettyDate : Date -> String
 prettyDate date =
-    (toString (Date.day date)) ++ "." ++ (toString (Date.month date)) ++ "." ++ (toString (Date.year date))
+    (toString (Date.day date)) ++ ". " ++ (toString (Date.month date)) ++ " " ++ (toString (Date.year date))
