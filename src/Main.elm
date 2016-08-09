@@ -20,9 +20,14 @@ main =
         }
 
 
+epoch : Date.Date
+epoch =
+    Date.fromTime 0
+
+
 initialize : Int -> ( Model, Cmd a )
 initialize currentTime =
-    ( Model 0 (Date.fromTime 0) (Date.fromTime (toFloat currentTime)), Cmd.none )
+    ( Model 0 epoch (Date.fromTime (toFloat currentTime)), Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -78,6 +83,10 @@ update msg model =
                 ( { model | startingDay = updateDate start msg }, Cmd.none )
 
 
+
+-- This stupidity cannot be caught of course...
+
+
 updateDate : Date.Date -> Msg -> Date.Date
 updateDate start msg =
     let
@@ -92,13 +101,13 @@ updateDate start msg =
     in
         case msg of
             UpdateDay newDay ->
-                month ++ "." ++ newDay ++ "." ++ year |> Date.fromString |> withDefault start
+                month ++ "." ++ newDay ++ "." ++ year |> Date.fromString |> withDefault epoch
 
             UpdateMonth newMonth ->
-                newMonth ++ "." ++ day ++ "." ++ year |> Date.fromString |> withDefault start
+                newMonth ++ "." ++ day ++ "." ++ year |> Date.fromString |> withDefault epoch
 
             UpdateYear newYear ->
-                month ++ "." ++ day ++ "." ++ newYear |> Date.fromString |> withDefault start
+                month ++ "." ++ day ++ "." ++ newYear |> Date.fromString |> withDefault epoch
 
             -- interesting... You can create a problem for yourself if you "split" a case/of statement by passing the operator in the default branch... might want to look into this
             _ ->
@@ -147,6 +156,23 @@ results { xp, today, startingDay } =
     in
         div []
             [ xpRatio |> toString |> (++) " miliseconds per xp: " |> text
-            , br [] []
-            , text "Add levels here"
+            , hr [] []
+            , ul [] (createLevelRows (toFloat xpRatio) (Date.toTime today))
             ]
+
+
+createLevelRows : Float -> Float -> List (Html Msg)
+createLevelRows xpRatio today =
+    let
+        thresholds =
+            List.map (\level -> level |> .threshold |> toFloat) levels
+
+        dates =
+            List.map (\threshold -> today + threshold * xpRatio |> Date.fromTime) thresholds
+    in
+        List.map (\date -> li [] [ prettyDate date |> text ]) dates
+
+
+prettyDate : Date.Date -> String
+prettyDate date =
+    (toString (Date.day date)) ++ "." ++ (toString (Date.month date)) ++ "." ++ (toString (Date.year date))
