@@ -4,13 +4,13 @@ import Html exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Date as Date
+import Date exposing (Date)
 import String exposing (toInt)
 import Result exposing (withDefault)
 import Levels exposing (..)
 
 
-main : Program Int
+main : Program Float
 main =
     Html.programWithFlags
         { init = initialize
@@ -20,14 +20,18 @@ main =
         }
 
 
-epoch : Date.Date
+epoch : Date
 epoch =
     Date.fromTime 0
 
 
-initialize : Int -> ( Model, Cmd a )
+initialize : Float -> ( Model, Cmd a )
 initialize currentTime =
-    ( Model 0 epoch (Date.fromTime (toFloat currentTime)), Cmd.none )
+    let
+        today =
+            Date.fromTime currentTime
+    in
+        ( Model 0 epoch today, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -40,15 +44,10 @@ subscriptions model =
 
 
 type alias Model =
-    { xp : Int
-    , startingDay : Date.Date
-    , today : Date.Date
+    { xp : Float
+    , startingDay : Date
+    , today : Date
     }
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( Model 0 (Date.fromTime 0) (Date.fromTime 0), Cmd.none )
 
 
 
@@ -60,7 +59,7 @@ type Msg
     | UpdateDay String
     | UpdateMonth String
     | UpdateYear String
-    | UpdateTime Int
+    | UpdateTime Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,7 +73,7 @@ update msg model =
     in
         case msg of
             UpdateTime currentTime ->
-                ( { model | today = Date.fromTime (toFloat currentTime) }, Cmd.none )
+                ( { model | today = Date.fromTime currentTime }, Cmd.none )
 
             UpdateXP newXP ->
                 ( { model | xp = parseInput newXP }, Cmd.none )
@@ -83,11 +82,7 @@ update msg model =
                 ( { model | startingDay = updateDate start msg }, Cmd.none )
 
 
-
--- This stupidity cannot be caught of course...
-
-
-updateDate : Date.Date -> Msg -> Date.Date
+updateDate : Date -> Msg -> Date
 updateDate start msg =
     let
         day =
@@ -101,22 +96,63 @@ updateDate start msg =
     in
         case msg of
             UpdateDay newDay ->
-                month ++ "." ++ newDay ++ "." ++ year |> Date.fromString |> withDefault epoch
+                updateDay newDay start
 
             UpdateMonth newMonth ->
-                newMonth ++ "." ++ day ++ "." ++ year |> Date.fromString |> withDefault epoch
+                updateMonth newMonth start
 
             UpdateYear newYear ->
-                month ++ "." ++ day ++ "." ++ newYear |> Date.fromString |> withDefault epoch
+                updateYear newYear start
 
-            -- interesting... You can create a problem for yourself if you "split" a case/of statement by passing the operator in the default branch... might want to look into this
             _ ->
                 start
 
 
-parseInput : String -> Int
+datify' : Date -> String -> Date
+datify' fallback dateString =
+    dateString |> Date.fromString |> withDefault fallback
+
+
+datify : String -> Date
+datify =
+    datify' epoch
+
+
+updateDay : String -> Date -> Date
+updateDay newDay date =
+    let
+        ( day, month, year ) =
+            splitDate date
+    in
+        month ++ "." ++ newDay ++ "." ++ year |> datify
+
+
+updateMonth : String -> Date -> Date
+updateMonth newMonth date =
+    let
+        ( day, month, year ) =
+            splitDate date
+    in
+        newMonth ++ "." ++ day ++ "." ++ year |> datify
+
+
+updateYear : String -> Date -> Date
+updateYear newYear date =
+    let
+        ( day, month, year ) =
+            splitDate date
+    in
+        month ++ "." ++ day ++ "." ++ newYear |> datify
+
+
+splitDate : Date -> ( String, String, String )
+splitDate date =
+    ( Date.day date |> toString, Date.month date |> toString, Date.year date |> toString )
+
+
+parseInput : String -> Float
 parseInput input =
-    withDefault 0 (toInt input)
+    withDefault 0 (toInt input) |> toFloat
 
 
 
@@ -138,10 +174,10 @@ view model =
 inputBoxes : Model -> Html Msg
 inputBoxes model =
     div []
-        [ input [ placeholder "XP", onInput UpdateXP ] []
-        , input [ placeholder "Day", onInput UpdateDay ] []
-        , input [ placeholder "Month", onInput UpdateMonth ] []
-        , input [ placeholder "Year", onInput UpdateYear ] []
+        [ input [ placeholder "XP", onInput UpdateXP ] [ model.xp |> toString |> text ]
+        , input [ placeholder "Day", onInput UpdateDay ] [ model.startingDay |> Date.day |> toString |> text ]
+        , input [ placeholder "Month", onInput UpdateMonth ] [ model.startingDay |> Date.month |> toString |> text ]
+        , input [ placeholder "Year", onInput UpdateYear ] [ model.startingDay |> Date.year |> toString |> text ]
         ]
 
 
@@ -152,20 +188,16 @@ results { xp, today, startingDay } =
             (Date.toTime today) - (Date.toTime startingDay)
 
         xpRatio =
-            round <| (/) diff <| toFloat xp
+            xp / diff
     in
-        div []
-            [ xpRatio |> toString |> (++) " miliseconds per xp: " |> text
-            , hr [] []
-            , ul [] (createLevelRows (toFloat xpRatio) (Date.toTime today))
-            ]
+        div [] [ ul [] (createLevelRows xpRatio (Date.toTime today)) ]
 
 
 createLevelRows : Float -> Float -> List (Html Msg)
 createLevelRows xpRatio today =
     let
         thresholds =
-            List.map (\level -> level |> .threshold |> toFloat) levels
+            List.map .threshold levels
 
         dates =
             List.map (\threshold -> today + threshold * xpRatio |> Date.fromTime) thresholds
@@ -173,6 +205,6 @@ createLevelRows xpRatio today =
         List.map (\date -> li [] [ prettyDate date |> text ]) dates
 
 
-prettyDate : Date.Date -> String
+prettyDate : Date -> String
 prettyDate date =
     (toString (Date.day date)) ++ "." ++ (toString (Date.month date)) ++ "." ++ (toString (Date.year date))

@@ -3,7 +3,7 @@ module Levels exposing (..)
 
 type alias Level =
     { level : Int
-    , threshold : Int
+    , threshold : Float
     }
 
 
