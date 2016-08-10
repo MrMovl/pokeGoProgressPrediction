@@ -8,6 +8,7 @@ import Date exposing (Date)
 import String exposing (toInt)
 import Result exposing (withDefault)
 import Levels exposing (..)
+import Time exposing (Time)
 
 
 main : Program Float
@@ -184,25 +185,36 @@ inputBoxes model =
 results : Model -> Html Msg
 results { xp, today, startingDay } =
     let
+        todayAsTime =
+            Date.toTime today
+
         diff =
-            (Date.toTime today) - (Date.toTime startingDay)
+            todayAsTime - (Date.toTime startingDay)
+
+        milisecondsPerXP =
+            diff / xp
 
         xpPerDay =
             xp / (diff * 86400000)
     in
-        div [] [ ul [] (createLevelRows xpPerDay (Date.toTime today)) ]
+        div [] [ ul [] (createLevelRows milisecondsPerXP todayAsTime) ]
 
 
-createLevelRows : Float -> Float -> List (Html Msg)
-createLevelRows xpPerDay today =
+createLevelRows : Float -> Time -> List (Html Msg)
+createLevelRows milisecondsPerXP today =
     let
         thresholds =
             List.map .threshold levels
 
         dates =
-            List.map (\threshold -> today + threshold * xpPerDay |> Date.fromTime) thresholds
+            extrapolate today milisecondsPerXP thresholds
     in
-        List.map (\date -> li [] [ prettyDate date |> text ]) dates
+        List.map (\date -> li [] [ date |> toString |> text ]) dates
+
+
+extrapolate : Time -> Float -> List Float -> List Float
+extrapolate today milisecondsPerXP thresholds =
+    List.map (\threshold -> today + threshold * milisecondsPerXP) thresholds
 
 
 prettyDate : Date -> String
