@@ -216,4 +216,7 @@ extrapolate today milisecondsPerXP thresholds =
 
 prettyDate : Date -> String
 prettyDate date =
-    (toString (Date.day date)) ++ ". " ++ (toString (Date.month date)) ++ " " ++ (toString (Date.year date))
+    if (date |> Date.day |> toString) == "NaN" then
+        "Way too long"
+    else
+        (toString (Date.day date)) ++ ". " ++ (toString (Date.month date)) ++ " " ++ (toString (Date.year date))
