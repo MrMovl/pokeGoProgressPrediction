@@ -32,7 +32,7 @@ initialize currentTime =
         today =
             Date.fromTime currentTime
     in
-        ( Model 0 epoch today, Cmd.none )
+        ( Model 1 epoch today, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -193,9 +193,6 @@ results { xp, today, startingDay } =
 
         milisecondsPerXP =
             diff / xp
-
-        xpPerDay =
-            xp / (diff * 86400000)
     in
         div [] [ ul [] (createLevelRows milisecondsPerXP todayAsTime) ]
 
@@ -209,7 +206,7 @@ createLevelRows milisecondsPerXP today =
         dates =
             extrapolate today milisecondsPerXP thresholds
     in
-        List.map (\date -> li [] [ date |> toString |> text ]) dates
+        List.map (\date -> li [] [ date |> Date.fromTime |> prettyDate |> text ]) dates
 
 
 extrapolate : Time -> Float -> List Float -> List Float
