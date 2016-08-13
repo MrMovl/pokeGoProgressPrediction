@@ -194,24 +194,39 @@ results { xp, today, startingDay } =
         milisecondsPerXP =
             diff / xp
     in
-        div [] [ ul [] (createLevelRows milisecondsPerXP todayAsTime) ]
+        div []
+            [ div [] [ xp |> getPlayerLevel |> levelDisplay ]
+            , ul [] (createLevelRows milisecondsPerXP todayAsTime)
+            ]
+
+
+getPlayerLevel : Float -> Maybe Level
+getPlayerLevel xp =
+    List.filter (\level -> xp > level.threshold) levels |> List.head
+
+
+levelDisplay : Maybe Level -> Html Msg
+levelDisplay level =
+    case level of
+        Just playerLevel ->
+            playerLevel.level |> toString |> (++) "Your current Level is " |> text
+
+        Nothing ->
+            "XP don't match any Level" |> text
 
 
 createLevelRows : Float -> Time -> List (Html Msg)
 createLevelRows milisecondsPerXP today =
     let
-        thresholds =
-            List.map .threshold levels
-
         dates =
-            extrapolate today milisecondsPerXP thresholds
+            extrapolate today milisecondsPerXP
     in
         List.map (\date -> li [] [ date |> Date.fromTime |> prettyDate |> text ]) dates
 
 
-extrapolate : Time -> Float -> List Float -> List Float
-extrapolate today milisecondsPerXP thresholds =
-    List.map (\threshold -> today + threshold * milisecondsPerXP) thresholds
+extrapolate : Time -> Float -> List Float
+extrapolate today milisecondsPerXP =
+    List.map (\level -> today + level.threshold * milisecondsPerXP) levels
 
 
 prettyDate : Date -> String
