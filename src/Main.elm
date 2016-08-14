@@ -193,40 +193,59 @@ results { xp, today, startingDay } =
 
         milisecondsPerXP =
             diff / xp
+
+        remainingLevels =
+            getRemainingLevels xp
     in
         div []
-            [ div [] [ xp |> getPlayerLevel |> levelDisplay ]
-            , ul [] (createLevelRows milisecondsPerXP todayAsTime)
+            [ div [] [ xp |> getNextPlayerLevel |> levelDisplay ]
+            , ul [] (createLevelRows milisecondsPerXP todayAsTime remainingLevels)
             ]
 
 
-getPlayerLevel : Float -> Maybe Level
-getPlayerLevel xp =
-    List.filter (\level -> xp > level.threshold) levels |> List.head
+getRemainingLevels : Float -> List Level
+getRemainingLevels xp =
+    List.filter (\level -> level.threshold > xp) levels
+
+
+getNextPlayerLevel : Float -> Maybe Level
+getNextPlayerLevel xp =
+    xp |> getRemainingLevels |> List.head
 
 
 levelDisplay : Maybe Level -> Html Msg
 levelDisplay level =
     case level of
         Just playerLevel ->
-            playerLevel.level |> toString |> (++) "Your current Level is " |> text
+            (playerLevel.level - 1) |> toString |> (++) "Your current Level is " |> text
 
         Nothing ->
             "XP don't match any Level" |> text
 
 
-createLevelRows : Float -> Time -> List (Html Msg)
-createLevelRows milisecondsPerXP today =
+createLevelRows : Float -> Time -> List Level -> List (Html Msg)
+createLevelRows milisecondsPerXP today remainingLevels =
     let
-        dates =
-            extrapolate today milisecondsPerXP
+        datesAndLevels =
+            extrapolate today milisecondsPerXP remainingLevels
     in
-        List.map (\date -> li [] [ date |> Date.fromTime |> prettyDate |> text ]) dates
+        List.map createSingleRow datesAndLevels
 
 
-extrapolate : Time -> Float -> List Float
-extrapolate today milisecondsPerXP =
-    List.map (\level -> today + level.threshold * milisecondsPerXP) levels
+createSingleRow : ( Float, Int ) -> Html Msg
+createSingleRow ( date, level ) =
+    li []
+        [ date
+            |> Date.fromTime
+            |> prettyDate
+            |> (++) ("Level " ++ (toString level) ++ ": ")
+            |> text
+        ]
+
+
+extrapolate : Time -> Float -> List Level -> List ( Float, Int )
+extrapolate today milisecondsPerXP remainingLevels =
+    List.map (\level -> ( today + level.threshold * milisecondsPerXP, level.level )) remainingLevels
 
 
 prettyDate : Date -> String
