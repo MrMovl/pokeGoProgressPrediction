@@ -1,7 +1,6 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Date exposing (Date)
@@ -9,11 +8,12 @@ import String exposing (toInt)
 import Result exposing (withDefault)
 import Levels exposing (..)
 import Time exposing (Time)
+import Task
 
 
-main : Program Float
+main : Program Never Model Msg
 main =
-    Html.programWithFlags
+    Html.program
         { init = initialize
         , view = view
         , update = update
@@ -26,13 +26,9 @@ epoch =
     Date.fromTime 0
 
 
-initialize : Float -> ( Model, Cmd a )
-initialize currentTime =
-    let
-        today =
-            Date.fromTime currentTime
-    in
-        ( Model 1 epoch today, Cmd.none )
+initialize : ( Model, Cmd Msg )
+initialize =
+    ( Model 709627 epoch epoch, Task.perform Today Time.now )
 
 
 subscriptions : Model -> Sub Msg
@@ -60,7 +56,7 @@ type Msg
     | UpdateDay String
     | UpdateMonth String
     | UpdateYear String
-    | UpdateTime Float
+    | Today Time
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -73,7 +69,7 @@ update msg model =
             updateDate start msg
     in
         case msg of
-            UpdateTime currentTime ->
+            Today currentTime ->
                 ( { model | today = Date.fromTime currentTime }, Cmd.none )
 
             UpdateXP newXP ->
@@ -109,14 +105,14 @@ updateDate start msg =
                 start
 
 
-datify' : Date -> String -> Date
-datify' fallback dateString =
+datify_ : Date -> String -> Date
+datify_ fallback dateString =
     dateString |> Date.fromString |> withDefault fallback
 
 
 datify : String -> Date
 datify =
-    datify' epoch
+    datify_ epoch
 
 
 updateDay : String -> Date -> Date
